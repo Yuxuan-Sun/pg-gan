@@ -14,6 +14,8 @@ import numpy as np
 import random
 import sys
 import tensorflow as tf
+import matplotlib.pyplot as plt
+import pandas as pd
 
 # our imports
 import models
@@ -59,11 +61,24 @@ def main():
             demo_file, simulator, iterator, parameters, is_range)
     # simulated annealing
     else:
-        posterior, test_acc_lst = simulated_annealing(model_type, samples, \
+        posterior, test_acc_lst, dataGraph = simulated_annealing(model_type, samples, \
             demo_file, simulator, iterator, parameters, is_range, toy=opts.toy)
 
-    print(posterior)
-    print(test_acc_lst)
+    print("overall posterior" + posterior)
+    print("test accuracy list" + test_acc_lst)
+    saveGraph(dataGraph)
+
+def saveGraph(dataGraph):
+    #recall dataGraph as a 5 x numberOfIteration matrix (num_iter, N_anc, T_split, mig, test_accuracy)
+    df = pd.DataFrame({'num_iter': dataGraph[0], 'N_anc': dataGraph[1], 'T_split': dataGraph[2], 'mig': dataGraph[3], 'test_acc': dataGraph[4]})
+
+    plt.plot('x','N_anc', data=df, marker='o', markerfacecolor='blue', markersize=10, color='blue', linewidth = 2)
+    plt.plot('x', 'T_split', data=df, marker='o', markerfacecolor='red', markersize=10, color='red', linewidth=2)
+    plt.plot('x', 'mig', data=df, marker='o', markerfacecolor='green', markersize=10, color='green', linewidth=2)
+    plt.plot('x', 'test_acc', data=df, marker='o', markerfacecolor='yellow', markersize=10, color='yellow', linewidth=2)
+
+    plt.savefig('output.png')
+
 
 def process_opts(opts):
     # TODO make file names command-line parameters
@@ -179,6 +194,10 @@ def simulated_annealing(model_type, samples, demo_file, simulator, iterator, \
     # for toy example
     if toy:
         num_iter = 2
+    # 2D matrix to store the info
+    dataGraph = np.zeros((5,num_iter))
+    # num_inter N_anc T_split mig test_acc
+
     for i in range(num_iter):
         print("\nITER", i)
         print("time", datetime.datetime.now().time())
@@ -229,10 +248,15 @@ def simulated_annealing(model_type, samples, demo_file, simulator, iterator, \
 
         print("T, p_accept, rand, s_current, test_acc, conf_mat", end=" ")
         print(T, p_accept, rand, s_current, test_acc, conf_mat)
+        dataGraph[0][i] = i + 1 # number of iteration
+        dataGraph[1][i] = s_current[0] #N_anc
+        dataGraph[2][i] = s_current[1] #T_split
+        dataGraph[3][i] = s_current[2] #mig
+        dataGraph[4][i] = test_acc
         posterior.append(s_current)
         test_acc_lst.append(test_acc)
 
-    return posterior, test_acc_lst
+    return posterior, test_acc_lst, dataGraph
 
 def likelihood(test_acc):
     """
