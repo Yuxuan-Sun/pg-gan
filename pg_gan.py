@@ -64,8 +64,8 @@ def main():
         posterior, test_acc_lst, dataGraph = simulated_annealing(model_type, samples, \
             demo_file, simulator, iterator, parameters, is_range, toy=opts.toy)
 
-    print("overall posterior" + posterior)
-    print("test accuracy list" + test_acc_lst)
+    print("overall posterior ", posterior)
+    print("test accuracy list ", test_acc_lst)
     saveGraph(dataGraph)
 
 def saveGraph(dataGraph):
